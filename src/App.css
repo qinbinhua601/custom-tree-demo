@@ -1,0 +1,93 @@
+.app {
+  max-width: 600px;
+  margin: 24px auto;
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 0 16px;
+}
+
+.app-title {
+  margin-bottom: 16px;
+  font-size: 20px;
+  color: #333;
+}
+
+/* 工具栏 */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-input {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 120px;
+}
+
+.toolbar-select {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.toolbar-btn {
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.toolbar-btn:hover {
+  background: #f0f0f0;
+}
+
+.toolbar-btn.danger {
+  color: #d32f2f;
+  border-color: #d32f2f;
+}
+
+.toolbar-btn.danger:hover {
+  background: #ffebee;
+}
+
+/* 事件日志 */
+.event-log {
+  margin-top: 12px;
+  padding: 12px;
+  background: #263238;
+  color: #aed581;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  max-height: 160px;
+  overflow: auto;
+}
+
+.event-log h4 {
+  margin: 0 0 8px;
+  color: #80cbc4;
+  font-size: 13px;
+}
+
+.event-log p {
+  margin: 2px 0;
+  line-height: 1.4;
+}
