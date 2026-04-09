@@ -99,3 +99,49 @@
   outline: none;
   width: 140px;
 }
+
+/* 置顶标记 */
+.pin-badge {
+  font-size: 12px;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+
+/* 置顶按钮 */
+.pin-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.pin-btn.pinned {
+  opacity: 0.6;
+}
+
+.tree-node:hover .pin-btn {
+  opacity: 1;
+}
+
+.pin-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* 置顶节点样式 */
+.tree-node.is-pinned {
+  background: #fff8e1;
+}
+
+.tree-node.is-pinned:hover {
+  background: #fff3c4;
+}
+
+.tree-node.is-pinned.selected {
+  background: #ffe082;
+}

@@ -1,3 +1,6 @@
+// 置顶文件夹集合
+const pinnedFolders = new Set();
+
 // 模拟树形数据存储
 const mockData = {
   root: [
@@ -140,3 +143,34 @@ export function setMockChildren(parentId, childrenIds) {
   const key = parentId ?? 'root';
   mockData[key] = childrenIds.map((id) => nodeMap[id]).filter(Boolean);
 }
+
+/**
+ * 置顶文件夹
+ */
+export function pinFolder(folderId) {
+  pinnedFolders.add(folderId);
+}
+
+/**
+ * 取消置顶文件夹
+ */
+export function unpinFolder(folderId) {
+  pinnedFolders.delete(folderId);
+}
+
+/**
+ * 判断文件夹是否置顶
+ */
+export function isPinned(folderId) {
+  return pinnedFolders.has(folderId);
+}
+
+/**
+ * 对子节点 ID 列表排序：置顶的文件夹排在最前面，其余保持原顺序
+ */
+export function sortWithPinned(childrenIds) {
+  const pinned = childrenIds.filter((id) => pinnedFolders.has(id));
+  const rest = childrenIds.filter((id) => !pinnedFolders.has(id));
+  return [...pinned, ...rest];
+}
+

@@ -70,6 +70,11 @@ export default function Toolbar({ treeRef }) {
       <div className="toolbar-group">
         <button onClick={handleDelete} className="toolbar-btn danger">删除节点</button>
         <button onClick={handleRename} className="toolbar-btn">重命名</button>
+        <button onClick={() => {
+          const id = getSelectedId();
+          if (!id) { alert('请先选中一个文件夹节点'); return; }
+          treeRef.current?.togglePin(id);
+        }} className="toolbar-btn">置顶/取消</button>
       </div>
 
       <div className="toolbar-group">

@@ -15,6 +15,10 @@ import {
   removeMockNode,
   updateMockNode,
   setMockChildren,
+  pinFolder,
+  unpinFolder,
+  isPinned,
+  sortWithPinned,
 } from '../api/mockTreeApi';
 import './Tree.css';
 
@@ -26,6 +30,7 @@ const childrenIdCache = {};
 
 const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDelete }, ref) {
   const [selectedId, setSelectedId] = useState(null);
+  const [, setPinnedVersion] = useState(0);
 
   const tree = useTree({
     rootItemId: 'root',
@@ -40,11 +45,11 @@ const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDe
       },
       getChildren: async (itemId) => {
         const key = itemId ?? 'root';
-        if (childrenIdCache[key]) return childrenIdCache[key];
+        if (childrenIdCache[key]) return sortWithPinned(childrenIdCache[key]);
         const children = await fetchChildren(key === 'root' ? null : itemId);
         const ids = children.map((c) => c.id);
         childrenIdCache[key] = ids;
-        return ids;
+        return sortWithPinned(ids);
       },
     },
     createLoadingItemData: () => ({ id: '__loading__', label: '加载中...', type: 'file' }),
@@ -175,6 +180,25 @@ const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDe
 
     // 获取 tree 实例
     getTree: () => tree,
+
+    // 置顶/取消置顶文件夹
+    togglePin: (folderId) => {
+      if (isPinned(folderId)) {
+        unpinFolder(folderId);
+      } else {
+        pinFolder(folderId);
+      }
+      // 刷新所有包含该节点的父级缓存
+      for (const [key, ids] of Object.entries(childrenIdCache)) {
+        if (ids.includes(folderId)) {
+          const parentItem = tree.getItemInstance(key);
+          parentItem?.invalidateChildrenIds?.();
+          break;
+        }
+      }
+      tree.rebuildTree();
+      setPinnedVersion((v) => v + 1);
+    },
   }));
 
   return (
@@ -190,6 +214,22 @@ const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDe
               onSelect?.(id);
             }}
             onExpand={onExpand}
+            onTogglePin={(folderId) => {
+              if (isPinned(folderId)) {
+                unpinFolder(folderId);
+              } else {
+                pinFolder(folderId);
+              }
+              for (const [key, ids] of Object.entries(childrenIdCache)) {
+                if (ids.includes(folderId)) {
+                  const parentItem = tree.getItemInstance(key);
+                  parentItem?.invalidateChildrenIds?.();
+                  break;
+                }
+              }
+              tree.rebuildTree();
+              setPinnedVersion((v) => v + 1);
+            }}
           />
         ))}
       </div>
@@ -197,7 +237,7 @@ const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDe
   );
 });
 
-function TreeNode({ item, selectedId, onSelect, onExpand }) {
+function TreeNode({ item, selectedId, onSelect, onExpand, onTogglePin }) {
   const id = item.getId();
   const data = item.getItemData();
   const isFolder = item.isFolder();
@@ -207,6 +247,7 @@ function TreeNode({ item, selectedId, onSelect, onExpand }) {
   const isRenaming = item.isRenaming?.();
   const level = item.getItemMeta().level;
   const isDragTarget = item.isDragTarget?.();
+  const pinned = isFolder && isPinned(id);
 
   const handleClick = (e) => {
     if (isFolder) {
@@ -220,6 +261,11 @@ function TreeNode({ item, selectedId, onSelect, onExpand }) {
     onSelect?.(id);
   };
 
+  const handlePinClick = (e) => {
+    e.stopPropagation();
+    onTogglePin?.(id);
+  };
+
   return (
     <div
       {...item.getProps()}
@@ -228,6 +274,7 @@ function TreeNode({ item, selectedId, onSelect, onExpand }) {
         isSelected ? 'selected' : '',
         isDragTarget ? 'drag-target' : '',
         isFolder ? 'is-folder' : 'is-file',
+        pinned ? 'is-pinned' : '',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -248,11 +295,25 @@ function TreeNode({ item, selectedId, onSelect, onExpand }) {
       {/* 图标 */}
       <span className="tree-icon">{isFolder ? (isExpanded ? '📂' : '📁') : '📄'}</span>
 
+      {/* 置顶标记 */}
+      {pinned && <span className="pin-badge" title="已置顶">📌</span>}
+
       {/* 名称 */}
       {isRenaming ? (
         <input {...item.getRenameInputProps()} className="rename-input" autoFocus />
       ) : (
         <span className="tree-label">{data?.label ?? '...'}</span>
+      )}
+
+      {/* 置顶按钮（仅文件夹 hover 显示） */}
+      {isFolder && !isLoading && (
+        <button
+          className={`pin-btn ${pinned ? 'pinned' : ''}`}
+          onClick={handlePinClick}
+          title={pinned ? '取消置顶' : '置顶'}
+        >
+          {pinned ? '📌' : '📍'}
+        </button>
       )}
     </div>
   );
