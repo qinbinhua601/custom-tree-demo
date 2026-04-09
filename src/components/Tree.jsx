@@ -27,6 +27,7 @@ const genId = () => `node-${++idCounter}`;
 
 // 子节点 ID 缓存，供 dataLoader 和 DnD 使用
 const childrenIdCache = {};
+const nodeDataCache = {};
 
 const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDelete }, ref) {
   const [selectedId, setSelectedId] = useState(null);
@@ -43,13 +44,16 @@ const FileTree = forwardRef(function FileTree({ onSelect, onExpand, onDrop, onDe
         const data = await fetchItem(itemId);
         return data || { id: itemId, label: itemId, type: 'file' };
       },
-      getChildren: async (itemId) => {
+      getChildrenWithData: async (itemId) => {
         const key = itemId ?? 'root';
-        if (childrenIdCache[key]) return sortWithPinned(childrenIdCache[key]);
+        if (childrenIdCache[key]) {
+          return sortWithPinned(childrenIdCache[key]).map((id) => ({ id, data: nodeDataCache[id] }));
+        }
         const children = await fetchChildren(key === 'root' ? null : itemId);
         const ids = children.map((c) => c.id);
         childrenIdCache[key] = ids;
-        return sortWithPinned(ids);
+        children.forEach((c) => { nodeDataCache[c.id] = c; });
+        return sortWithPinned(ids).map((id) => ({ id, data: nodeDataCache[id] }));
       },
     },
     createLoadingItemData: () => ({ id: '__loading__', label: '加载中...', type: 'file' }),
